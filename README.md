@@ -1,6 +1,6 @@
 # Universe AppImage Manager
 
-[![Build](https://github.com/jpearce/universe/actions/workflows/build.yml/badge.svg)](https://github.com/jpearce/universe/actions/workflows/build.yml)
+[![Build](https://github.com/ProgramingPro2/universe/actions/workflows/build.yml/badge.svg)](https://github.com/ProgramingPro2/universe/actions/workflows/build.yml)
 
 Universe integrates AppImages into your Linux desktop and provides a GUI to run and configure them.
 
@@ -22,7 +22,7 @@ Universe integrates AppImages into your Linux desktop and provides a GUI to run 
 
 ## Install
 
-Download the latest build from [GitHub Actions artifacts](https://github.com/jpearce/universe/actions) or [Releases](https://github.com/jpearce/universe/releases).
+Download the latest build from [GitHub Actions artifacts](https://github.com/ProgramingPro2/universe/actions) or [Releases](https://github.com/ProgramingPro2/universe/releases).
 
 ### Debian / Ubuntu (.deb)
 
