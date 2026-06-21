@@ -1,0 +1,90 @@
+name: Build and Release
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            python3 python3-gi gir1.2-gtk-4.0 gir1.2-adw-1 \
+            libadwaita-1-0 desktop-file-utils fakeroot
+
+      - name: Run tests
+        run: make test
+
+  build:
+    needs: test
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      matrix:
+        include:
+          - arch: amd64
+            runner: ubuntu-latest
+          - arch: arm64
+            runner: ubuntu-24.04-arm
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            python3 python3-gi gir1.2-gtk-4.0 gir1.2-adw-1 \
+            libadwaita-1-0 desktop-file-utils fakeroot curl
+
+      - name: Install nfpm
+        run: |
+          case "${{ matrix.arch }}" in
+            amd64) NFPM_ARCH=x86_64 ;;
+            arm64) NFPM_ARCH=arm64 ;;
+            *) NFPM_ARCH="${{ matrix.arch }}" ;;
+          esac
+          curl -fsSL "https://github.com/goreleaser/nfpm/releases/download/v2.41.1/nfpm_2.41.1_Linux_${NFPM_ARCH}.tar.gz" \
+            | tar -xz -C /tmp nfpm
+          sudo mv /tmp/nfpm /usr/local/bin/nfpm
+
+      - name: Build packages
+        run: |
+          make deb ARCH=${{ matrix.arch }}
+          make nfpm ARCH=${{ matrix.arch }}
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: universe-${{ matrix.arch }}
+          path: |
+            dist/universe_*_${{ matrix.arch }}.deb
+            dist/universe_*_${{ matrix.arch }}.tar.gz
+            dist/universe-*.rpm
+
+  release:
+    if: github.event_name == 'release'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
+
+      - name: Upload release assets
+        uses: softprops/action-gh-release@v2
+        with:
+          files: artifacts/*

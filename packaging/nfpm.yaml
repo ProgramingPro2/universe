@@ -1,0 +1,49 @@
+# yaml-language-server: $schema=https://nfpm.goreleaser.com/static/schema.json
+name: universe
+arch: amd64
+platform: linux
+version: "0.1.0"
+section: utils
+priority: optional
+maintainer: "Universe Contributors <universe@localhost>"
+description: |
+  Universe AppImage Manager.
+  Integrates AppImages into the desktop environment and provides
+  a manager GUI for running and configuring AppImages.
+license: GPL-3.0-or-later
+homepage: "https://github.com/jpearce/universe"
+depends:
+  - python3
+  - python3-gi
+  - gir1.2-gtk-4.0
+  - gir1.2-adw-1
+  - libadwaita-1-0
+  - desktop-file-utils
+  - libfuse2t64
+
+contents:
+  - src: build/stage/usr/lib/universe
+    dst: /usr/lib/universe
+    type: tree
+  - src: build/stage/usr/bin/universe
+    dst: /usr/bin/universe
+    file_info:
+      mode: 0755
+  - src: build/stage/usr/share/applications/io.universe.Universe.desktop
+    dst: /usr/share/applications/io.universe.Universe.desktop
+  - src: build/stage/usr/share/applications/universe-open.desktop
+    dst: /usr/share/applications/universe-open.desktop
+  - src: build/stage/usr/share/mime/packages/universe.xml
+    dst: /usr/share/mime/packages/universe.xml
+  - src: build/stage/usr/share/icons/hicolor/scalable/apps/universe.svg
+    dst: /usr/share/icons/hicolor/scalable/apps/universe.svg
+
+overrides:
+  deb:
+    scripts:
+      postinstall: packaging/debian/postinst
+      postremove: packaging/debian/postrm
+  rpm:
+    scripts:
+      postinstall: packaging/debian/postinst
+      postremove: packaging/debian/postrm

@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=Universe AppImage Handler
+Comment=Integrate or run AppImage files
+Exec=universe open %f
+Icon=universe
+Terminal=false
+NoDisplay=true
+MimeType=application/vnd.appimage;application/x-iso9660-appimage;
+Categories=System;

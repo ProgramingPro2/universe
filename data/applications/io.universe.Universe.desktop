@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=Universe
+Comment=AppImage integrator and manager
+Exec=universe gui
+Icon=universe
+Terminal=false
+Categories=System;Utility;
+Keywords=AppImage;integrator;manager;
+StartupNotify=true
