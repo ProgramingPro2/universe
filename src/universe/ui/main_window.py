@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import traceback
 from pathlib import Path
 
 import gi
@@ -13,6 +12,7 @@ gi.require_version("Adw", "1")
 from gi.repository import Adw, Gtk
 
 from universe.core import appimage
+from universe.core.config import take_config_warning
 from universe.core.discover import discover_appimages
 from universe.core.integrator import integrate, run_app
 from universe.ui.app_card import AppCard, DiscoverCard
@@ -104,6 +104,7 @@ class UniverseMainWindow(Adw.ApplicationWindow):
         self._clear_flow(self._discovered_flow)
 
         apps = list_apps()
+        warning = take_config_warning()
         discovered = discover_appimages()
 
         for config in apps:
@@ -119,6 +120,9 @@ class UniverseMainWindow(Adw.ApplicationWindow):
         self._integrated_section.set_visible(bool(apps))
         self._discovered_section.set_visible(bool(discovered))
 
+        if warning:
+            self._show_error(warning, heading="Configuration recovery")
+
     def _handle_run(self, app_id: str) -> None:
         try:
             run_app(app_id)
@@ -133,21 +137,28 @@ class UniverseMainWindow(Adw.ApplicationWindow):
             self._show_error(str(exc))
 
     def _handle_settings(self, app_id: str) -> None:
-        window = AppSettingsWindow(app_id, self, self._reload)
-        window.present()
+        try:
+            window = AppSettingsWindow(app_id, self, self._reload)
+            window.present()
+        except ValueError as exc:
+            self._show_error(str(exc))
 
     def _add_appimage(self, *_args: object) -> None:
         try:
             dialog = create_appimage_dialog("Select AppImage")
             dialog.open(self, None, self._on_file_selected)
-        except Exception as exc:
-            traceback.print_exc()
+        except (OSError, RuntimeError, TypeError, ValueError) as exc:
             self._show_error(f"Could not open file chooser: {exc}")
 
     def _on_file_selected(self, dialog: Gtk.FileDialog, result: object) -> None:
         try:
             file = dialog.open_finish(result)
-        except Exception:
+        except Exception as exc:
+            # GLib.Error on cancel — ignore cancellations, show other failures.
+            message = str(exc)
+            if "dismissed" in message.lower() or "cancelled" in message.lower() or "canceled" in message.lower():
+                return
+            self._show_error(f"Could not open file: {exc}")
             return
         path = Path(file.get_path() or "")
         if not appimage.is_appimage(path):
@@ -155,7 +166,7 @@ class UniverseMainWindow(Adw.ApplicationWindow):
             return
         self._handle_integrate(path)
 
-    def _show_error(self, message: str) -> None:
-        dialog = Adw.MessageDialog(heading="Error", body=message, transient_for=self)
+    def _show_error(self, message: str, heading: str = "Error") -> None:
+        dialog = Adw.MessageDialog(heading=heading, body=message, transient_for=self)
         dialog.add_response("ok", "OK")
         dialog.present()

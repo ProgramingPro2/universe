@@ -30,11 +30,24 @@ def sanitize_id(value: str) -> str:
     return slug or "appimage"
 
 
+def _has_elf_magic(path: Path) -> bool:
+    try:
+        with path.open("rb") as handle:
+            return handle.read(4) == b"\x7fELF"
+    except OSError:
+        return False
+
+
 def is_appimage(path: Path) -> bool:
     if not path.is_file():
         return False
     name = path.name.lower()
-    return name.endswith(".appimage") or name.endswith(".app")
+    if name.endswith(".appimage"):
+        return True
+    # Bare ".app" is too broad (unrelated formats); require ELF magic.
+    if name.endswith(".app"):
+        return _has_elf_magic(path)
+    return False
 
 
 def make_executable(path: Path) -> None:

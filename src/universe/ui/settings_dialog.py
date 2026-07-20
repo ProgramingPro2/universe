@@ -12,7 +12,7 @@ gi.require_version("Adw", "1")
 
 from gi.repository import Adw, Gtk
 
-from universe.core.config import AppConfig, get_app, save_app
+from universe.core.config import get_app, save_app
 from universe.core.integrator import refresh_integration, remove_integration
 from universe.core.updater import check_update_info, replace_appimage, update_with_tool
 from universe.ui.file_dialog import create_appimage_dialog
@@ -101,6 +101,11 @@ class AppSettingsWindow(Gtk.Window):
         root.append(content)
         self.set_child(root)
 
+    def _show_error(self, message: str, heading: str = "Error") -> None:
+        dialog = Adw.MessageDialog(heading=heading, body=message, transient_for=self)
+        dialog.add_response("ok", "OK")
+        dialog.present()
+
     def _parse_env(self, raw: str) -> dict[str, str]:
         result: dict[str, str] = {}
         if not raw.strip():
@@ -116,55 +121,81 @@ class AppSettingsWindow(Gtk.Window):
     def _save(self, *_args: object) -> None:
         config = get_app(self._app_id)
         if config is None:
+            self._show_error("App is no longer integrated.")
             return
-        config.custom_name = self._name_entry.get_text().strip()
-        config.launch_args = self._args_entry.get_text().strip()
-        config.env_vars = self._parse_env(self._env_entry.get_text())
-        config.categories = [
-            c.strip() for c in self._categories_entry.get_text().split(";") if c.strip()
-        ]
-        config.keywords = [
-            k.strip() for k in self._keywords_entry.get_text().split(";") if k.strip()
-        ]
-        config.autostart = self._autostart_switch.get_active()
-        save_app(config)
-        refresh_integration(self._app_id)
-        self._on_changed()
+        try:
+            config.custom_name = self._name_entry.get_text().strip()
+            config.launch_args = self._args_entry.get_text().strip()
+            config.env_vars = self._parse_env(self._env_entry.get_text())
+            config.categories = [
+                c.strip() for c in self._categories_entry.get_text().split(";") if c.strip()
+            ]
+            config.keywords = [
+                k.strip() for k in self._keywords_entry.get_text().split(";") if k.strip()
+            ]
+            config.autostart = self._autostart_switch.get_active()
+            save_app(config)
+            refresh_integration(self._app_id)
+            self._on_changed()
+        except (OSError, ValueError) as exc:
+            self._show_error(str(exc))
 
     def _refresh_update_info(self, *_args: object) -> None:
-        info = check_update_info(self._app_id)
-        config = get_app(self._app_id)
-        if config:
+        try:
+            info = check_update_info(self._app_id)
+            config = get_app(self._app_id)
+            if config is None:
+                self._show_error("App is no longer integrated.")
+                return
             config.update_info = info
             save_app(config)
+            self._show_error(
+                info or "No embedded update information found.",
+                heading="Update info",
+            )
+        except (OSError, ValueError) as exc:
+            self._show_error(str(exc))
 
     def _replace_appimage(self, *_args: object) -> None:
-        dialog = create_appimage_dialog("Select replacement AppImage")
-        dialog.open(self, None, self._on_replace_selected)
-
-    def _on_replace_selected(self, _dialog: Gtk.FileDialog, result: object) -> None:
         try:
-            file = _dialog.open_finish(result)
-        except Exception:
+            dialog = create_appimage_dialog("Select replacement AppImage")
+            dialog.open(self, None, self._on_replace_selected)
+        except (OSError, RuntimeError, TypeError, ValueError) as exc:
+            self._show_error(f"Could not open file chooser: {exc}")
+
+    def _on_replace_selected(self, dialog: Gtk.FileDialog, result: object) -> None:
+        try:
+            file = dialog.open_finish(result)
+        except Exception as exc:
+            message = str(exc)
+            if "dismissed" in message.lower() or "cancelled" in message.lower() or "canceled" in message.lower():
+                return
+            self._show_error(f"Could not open file: {exc}")
             return
         path = Path(file.get_path() or "")
         if not path.is_file():
+            self._show_error("Selected file does not exist.")
             return
-        replace_appimage(self._app_id, path)
-        self._on_changed()
+        try:
+            replace_appimage(self._app_id, path)
+            self._on_changed()
+        except (OSError, ValueError) as exc:
+            self._show_error(str(exc))
 
     def _update_with_tool(self, *_args: object) -> None:
         if not shutil.which("appimageupdatetool"):
-            dialog = Adw.MessageDialog(
+            self._show_error(
+                "Install appimageupdatetool to use automatic updates.",
                 heading="Updater not found",
-                body="Install appimageupdatetool to use automatic updates.",
-                transient_for=self,
             )
-            dialog.add_response("ok", "OK")
-            dialog.present()
             return
-        if update_with_tool(self._app_id):
-            self._on_changed()
+        try:
+            if update_with_tool(self._app_id):
+                self._on_changed()
+            else:
+                self._show_error("appimageupdatetool did not report a successful update.")
+        except (OSError, ValueError) as exc:
+            self._show_error(str(exc))
 
     def _remove(self, *_args: object) -> None:
         dialog = Adw.MessageDialog(
@@ -178,10 +209,14 @@ class AppSettingsWindow(Gtk.Window):
         dialog.set_close_response("cancel")
 
         def on_response(_dlg: Adw.MessageDialog, response: str) -> None:
-            if response == "remove":
+            if response != "remove":
+                return
+            try:
                 remove_integration(self._app_id)
                 self._on_changed()
                 self.close()
+            except (OSError, ValueError) as exc:
+                self._show_error(str(exc))
 
         dialog.connect("response", on_response)
         dialog.present()

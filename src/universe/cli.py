@@ -7,7 +7,7 @@ import sys
 from pathlib import Path
 
 from universe.core import appimage
-from universe.core.config import find_by_path, list_apps
+from universe.core.config import find_by_path, list_apps, take_config_warning
 from universe.core.integrator import integrate, remove_integration, run_app
 
 
@@ -48,6 +48,9 @@ def build_parser() -> argparse.ArgumentParser:
 
 def cmd_list() -> None:
     apps = list_apps()
+    warning = take_config_warning()
+    if warning:
+        print(f"Warning: {warning}", file=sys.stderr)
     if not apps:
         print("No integrated AppImages.")
         return

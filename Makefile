@@ -1,4 +1,4 @@
-VERSION := 0.1.0
+VERSION := 0.1.1
 ARCH ?= amd64
 PKG_NAME := universe
 DEB_FILE := dist/$(PKG_NAME)_$(VERSION)_$(ARCH).deb
@@ -19,6 +19,8 @@ stage:
 	mkdir -p "$(STAGE_ROOT)/usr/share/mime/packages"
 	mkdir -p "$(STAGE_ROOT)/usr/share/icons/hicolor/scalable/apps"
 	cp -r src/universe "$(STAGE_ROOT)/usr/lib/universe/"
+	find "$(STAGE_ROOT)/usr/lib/universe" -type d -name '__pycache__' -exec rm -rf {} +
+	find "$(STAGE_ROOT)/usr/lib/universe" -type f -name '*.pyc' -delete
 	cp packaging/universe-launcher.py "$(STAGE_ROOT)/usr/bin/universe"
 	chmod 755 "$(STAGE_ROOT)/usr/bin/universe"
 	cp data/applications/io.universe.Universe.desktop "$(STAGE_ROOT)/usr/share/applications/"

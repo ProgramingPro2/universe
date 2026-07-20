@@ -3,11 +3,30 @@
 from __future__ import annotations
 
 import json
+import logging
+import shutil
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Any
 
 from universe.core.paths import apps_config_path, ensure_dirs
+
+logger = logging.getLogger(__name__)
+
+# Set when a corrupt config was recovered on the last load.
+_last_config_warning: str | None = None
+
+
+def take_config_warning() -> str | None:
+    """Return and clear the most recent config recovery warning, if any."""
+    global _last_config_warning
+    warning = _last_config_warning
+    _last_config_warning = None
+    return warning
+
+
+def peek_config_warning() -> str | None:
+    return _last_config_warning
 
 
 @dataclass
@@ -39,11 +58,30 @@ class AppConfig:
 
 
 def _load_raw() -> dict[str, Any]:
+    global _last_config_warning
     path = apps_config_path()
     if not path.exists():
         return {}
-    with path.open(encoding="utf-8") as handle:
-        return json.load(handle)
+    try:
+        with path.open(encoding="utf-8") as handle:
+            data = json.load(handle)
+    except (json.JSONDecodeError, OSError) as exc:
+        backup = path.with_suffix(".json.bak")
+        try:
+            shutil.copy2(path, backup)
+            backup_note = f" Corrupt file backed up to {backup}."
+        except OSError:
+            backup_note = ""
+        _last_config_warning = (
+            f"Could not read apps.json ({exc}). Starting with an empty app list.{backup_note}"
+        )
+        logger.info("%s", _last_config_warning)
+        return {}
+    if not isinstance(data, dict):
+        _last_config_warning = "apps.json was not a JSON object; starting with an empty app list."
+        logger.info("%s", _last_config_warning)
+        return {}
+    return data
 
 
 def _save_raw(data: dict[str, Any]) -> None:
@@ -58,6 +96,8 @@ def list_apps() -> list[AppConfig]:
     raw = _load_raw()
     apps: list[AppConfig] = []
     for app_id, payload in sorted(raw.items()):
+        if not isinstance(payload, dict):
+            continue
         apps.append(_from_dict(app_id, payload))
     return apps
 
@@ -66,7 +106,10 @@ def get_app(app_id: str) -> AppConfig | None:
     raw = _load_raw()
     if app_id not in raw:
         return None
-    return _from_dict(app_id, raw[app_id])
+    payload = raw[app_id]
+    if not isinstance(payload, dict):
+        return None
+    return _from_dict(app_id, payload)
 
 
 def save_app(config: AppConfig) -> None:
@@ -88,6 +131,26 @@ def find_by_path(path: Path) -> AppConfig | None:
         if app.appimage_path == resolved:
             return app
     return None
+
+
+def allocate_unique_id(base_id: str, appimage_path: str) -> str:
+    """Return base_id, or a disambiguated id if another app already uses it."""
+    raw = _load_raw()
+    resolved = str(Path(appimage_path).resolve())
+    existing = raw.get(base_id)
+    if existing is None:
+        return base_id
+    if isinstance(existing, dict) and existing.get("appimage_path") == resolved:
+        return base_id
+    counter = 2
+    while True:
+        candidate = f"{base_id}-{counter}"
+        if candidate not in raw:
+            return candidate
+        other = raw[candidate]
+        if isinstance(other, dict) and other.get("appimage_path") == resolved:
+            return candidate
+        counter += 1
 
 
 def _from_dict(app_id: str, payload: dict[str, Any]) -> AppConfig:

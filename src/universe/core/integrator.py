@@ -9,7 +9,14 @@ from pathlib import Path
 
 from universe.core import appimage
 from universe.core.autostart import sync_autostart
-from universe.core.config import AppConfig, find_by_path, get_app, remove_app, save_app
+from universe.core.config import (
+    AppConfig,
+    allocate_unique_id,
+    find_by_path,
+    get_app,
+    remove_app,
+    save_app,
+)
 from universe.core.desktop_entry import write_desktop_entry
 from universe.core.icons import ensure_icon_index, install_fallback_icon, resolve_icon_file
 from universe.core.paths import (
@@ -89,10 +96,11 @@ def integrate(
         source_path = target_path
 
     appimage.make_executable(source_path)
-    icon_name = _install_icon(metadata.app_id, metadata.icon_source, metadata.icon_size)
+    app_id = allocate_unique_id(metadata.app_id, str(source_path))
+    icon_name = _install_icon(app_id, metadata.icon_source, metadata.icon_size)
 
     config = AppConfig(
-        id=metadata.app_id,
+        id=app_id,
         appimage_path=str(source_path),
         name=metadata.name,
         version=metadata.version,

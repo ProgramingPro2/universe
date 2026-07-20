@@ -5,8 +5,15 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-from universe.core.config import AppConfig, get_app, list_apps, remove_app, save_app
-from universe.core.paths import apps_config_path
+from universe.core.config import (
+    AppConfig,
+    allocate_unique_id,
+    get_app,
+    list_apps,
+    remove_app,
+    save_app,
+    take_config_warning,
+)
 
 
 class ConfigTests(unittest.TestCase):
@@ -36,6 +43,40 @@ class ConfigTests(unittest.TestCase):
                     self.assertEqual(len(apps), 1)
                     remove_app("test-app")
                     self.assertIsNone(get_app("test-app"))
+
+    def test_corrupt_json_recovers(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            config_path = Path(tmp) / "apps.json"
+            config_path.write_text("{not-json", encoding="utf-8")
+            with patch("universe.core.config.apps_config_path", return_value=config_path):
+                with patch("universe.core.config.ensure_dirs"):
+                    take_config_warning()
+                    apps = list_apps()
+                    self.assertEqual(apps, [])
+                    warning = take_config_warning()
+                    self.assertIsNotNone(warning)
+                    self.assertTrue(config_path.with_suffix(".json.bak").exists())
+
+    def test_allocate_unique_id_on_collision(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            config_path = Path(tmp) / "apps.json"
+            with patch("universe.core.config.apps_config_path", return_value=config_path):
+                with patch("universe.core.config.ensure_dirs"):
+                    save_app(
+                        AppConfig(
+                            id="demo",
+                            appimage_path="/tmp/one.AppImage",
+                            name="One",
+                        )
+                    )
+                    self.assertEqual(
+                        allocate_unique_id("demo", "/tmp/two.AppImage"),
+                        "demo-2",
+                    )
+                    self.assertEqual(
+                        allocate_unique_id("demo", "/tmp/one.AppImage"),
+                        "demo",
+                    )
 
 
 if __name__ == "__main__":

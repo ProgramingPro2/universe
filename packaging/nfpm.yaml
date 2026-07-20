@@ -2,10 +2,10 @@
 name: universe
 arch: amd64
 platform: linux
-version: "0.1.0"
+version: "0.1.1"
 section: utils
 priority: optional
-maintainer: "Universe Contributors <universe@localhost>"
+maintainer: "ProgramingPro2 <ProgramingPro2@users.noreply.github.com>"
 description: |
   Universe AppImage Manager.
   Integrates AppImages into the desktop environment and provides
@@ -19,7 +19,7 @@ depends:
   - gir1.2-adw-1
   - libadwaita-1-0
   - desktop-file-utils
-  - libfuse2t64
+  - libfuse2t64 | libfuse2
 
 contents:
   - src: build/stage/usr/lib/universe

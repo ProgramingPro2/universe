@@ -4,12 +4,12 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "universe"
-version = "0.1.0"
+version = "0.1.1"
 description = "AppImage integrator and manager for Linux"
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "GPL-3.0-or-later" }
-authors = [{ name = "Universe Contributors" }]
+authors = [{ name = "ProgramingPro2", email = "ProgramingPro2@users.noreply.github.com" }]
 dependencies = []
 
 [project.scripts]
