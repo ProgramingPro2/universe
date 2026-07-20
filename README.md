@@ -93,16 +93,7 @@ PYTHONPATH=src python3 -m universe gui
 
 Integrated AppImages are stored in `~/Applications`. Configuration lives in `~/.config/universe/apps.json`.
 
-## Remove AppImageLauncher
-
-If AppImageLauncher is still installed:
-
-```bash
-systemctl --user stop appimagelauncherd.service
-sudo apt purge -y appimagelauncher
-sudo apt autoremove -y
-rm -f ~/.config/appimagelauncher.cfg
-```
+If double-click still opens AppImageLauncher (or another handler), disable or remove that tool so it no longer owns the AppImage MIME types.
 
 ## License
 
