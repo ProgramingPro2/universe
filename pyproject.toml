@@ -4,13 +4,19 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "universe"
-version = "0.1.1"
+version = "0.1.2"
 description = "AppImage integrator and manager for Linux"
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "GPL-3.0-or-later" }
 authors = [{ name = "ProgramingPro2", email = "ProgramingPro2@users.noreply.github.com" }]
 dependencies = []
+
+[project.urls]
+Homepage = "https://github.com/ProgramingPro2/universe"
+Repository = "https://github.com/ProgramingPro2/universe"
+Issues = "https://github.com/ProgramingPro2/universe/issues"
+Changelog = "https://github.com/ProgramingPro2/universe/blob/main/CHANGELOG.md"
 
 [project.scripts]
 universe = "universe.cli:main"

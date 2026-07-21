@@ -1,4 +1,4 @@
-VERSION := 0.1.1
+VERSION := 0.1.2
 ARCH ?= amd64
 PKG_NAME := universe
 DEB_FILE := dist/$(PKG_NAME)_$(VERSION)_$(ARCH).deb
@@ -18,6 +18,7 @@ stage:
 	mkdir -p "$(STAGE_ROOT)/usr/share/applications"
 	mkdir -p "$(STAGE_ROOT)/usr/share/mime/packages"
 	mkdir -p "$(STAGE_ROOT)/usr/share/icons/hicolor/scalable/apps"
+	mkdir -p "$(STAGE_ROOT)/usr/share/doc/universe"
 	cp -r src/universe "$(STAGE_ROOT)/usr/lib/universe/"
 	find "$(STAGE_ROOT)/usr/lib/universe" -type d -name '__pycache__' -exec rm -rf {} +
 	find "$(STAGE_ROOT)/usr/lib/universe" -type f -name '*.pyc' -delete
@@ -27,6 +28,8 @@ stage:
 	cp data/applications/universe-open.desktop "$(STAGE_ROOT)/usr/share/applications/"
 	cp data/mime/universe.xml "$(STAGE_ROOT)/usr/share/mime/packages/"
 	cp data/icons/hicolor/scalable/apps/universe.svg "$(STAGE_ROOT)/usr/share/icons/hicolor/scalable/apps/"
+	cp LICENSE COPYRIGHT "$(STAGE_ROOT)/usr/share/doc/universe/"
+	cp README.md CHANGELOG.md "$(STAGE_ROOT)/usr/share/doc/universe/"
 
 deb: stage
 	rm -rf "$(BUILD_ROOT)"

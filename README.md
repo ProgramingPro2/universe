@@ -41,21 +41,21 @@ Download the latest packages from [GitHub Releases](https://github.com/Programin
 ### Debian / Ubuntu (.deb)
 
 ```bash
-sudo dpkg -i universe_0.1.1_amd64.deb   # or arm64
+sudo dpkg -i universe_0.1.2_amd64.deb   # or arm64
 sudo apt-get install -f
 ```
 
 ### Fedora / RHEL (.rpm)
 
 ```bash
-sudo rpm -i universe-0.1.1-1.x86_64.rpm   # or aarch64
+sudo rpm -i universe-0.1.2-1.x86_64.rpm   # or aarch64
 ```
 
 ### Portable tarball (.tar.gz)
 
 ```bash
-tar -xzf universe_0.1.1_amd64.tar.gz
-cd universe-0.1.1
+tar -xzf universe_0.1.2_amd64.tar.gz
+cd universe-0.1.2
 sudo ./install.sh
 ```
 
@@ -63,8 +63,8 @@ sudo ./install.sh
 
 ```bash
 make test
-make deb-amd64          # dist/universe_0.1.1_amd64.deb
-make deb-arm64          # dist/universe_0.1.1_arm64.deb
+make deb-amd64          # dist/universe_0.1.2_amd64.deb
+make deb-arm64          # dist/universe_0.1.2_arm64.deb
 make deb-all            # both .deb packages
 
 # With nfpm installed (deb + rpm + tar.gz):
@@ -95,8 +95,24 @@ Integrated AppImages are stored in `~/Applications`. Configuration lives in `~/.
 
 If double-click still opens AppImageLauncher (or another handler), disable or remove that tool so it no longer owns the AppImage MIME types.
 
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) and the [Code of Conduct](CODE_OF_CONDUCT.md).
+
 ## License
 
-GPL-3.0-or-later — see [LICENSE](LICENSE).
+Universe is free software under the **GNU General Public License v3 or later**.
+
+- Full license text: [LICENSE](LICENSE)
+- Copyright notice: [COPYRIGHT](COPYRIGHT)
+
+```
+Copyright (C) 2026 ProgramingPro2
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+```
 
 See also [CHANGELOG.md](CHANGELOG.md), [SECURITY.md](SECURITY.md), and [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).

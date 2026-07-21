@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.1.2 — 2026-07-21
+
+Open-source compliance and community hygiene.
+
+- Ship the full GNU GPL v3 text in `LICENSE` (fixes GitHub “Other” license detection)
+- Add `COPYRIGHT`, `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`, and GitHub issue/PR templates
+- Install `LICENSE` / `COPYRIGHT` / docs under `/usr/share/doc/universe` in packages
+
 ## 0.1.1 — 2026-07-20
 
 First public release candidate after hardening.

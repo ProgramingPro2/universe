@@ -2,7 +2,7 @@
 name: universe
 arch: amd64
 platform: linux
-version: "0.1.1"
+version: "0.1.2"
 section: utils
 priority: optional
 maintainer: "ProgramingPro2 <ProgramingPro2@users.noreply.github.com>"
@@ -37,6 +37,9 @@ contents:
     dst: /usr/share/mime/packages/universe.xml
   - src: build/stage/usr/share/icons/hicolor/scalable/apps/universe.svg
     dst: /usr/share/icons/hicolor/scalable/apps/universe.svg
+  - src: build/stage/usr/share/doc/universe
+    dst: /usr/share/doc/universe
+    type: tree
 
 overrides:
   deb:
