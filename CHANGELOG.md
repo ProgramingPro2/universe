@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Document system dependency tree and licenses in `docs/DEPENDENCIES.md`
+
 ## 0.1.2 — 2026-07-21
 
 Open-source compliance and community hygiene.

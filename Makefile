@@ -29,7 +29,7 @@ stage:
 	cp data/mime/universe.xml "$(STAGE_ROOT)/usr/share/mime/packages/"
 	cp data/icons/hicolor/scalable/apps/universe.svg "$(STAGE_ROOT)/usr/share/icons/hicolor/scalable/apps/"
 	cp LICENSE COPYRIGHT "$(STAGE_ROOT)/usr/share/doc/universe/"
-	cp README.md CHANGELOG.md "$(STAGE_ROOT)/usr/share/doc/universe/"
+	cp README.md CHANGELOG.md docs/DEPENDENCIES.md "$(STAGE_ROOT)/usr/share/doc/universe/"
 
 deb: stage
 	rm -rf "$(BUILD_ROOT)"

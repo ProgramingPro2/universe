@@ -38,3 +38,5 @@ Metadata extraction may execute the AppImage. See [SECURITY.md](../SECURITY.md).
 ## Packaging
 
 `make stage` copies sources into `build/stage` (without `__pycache__`). `make deb` / `make nfpm` produce `.deb`, `.rpm`, and `.tar.gz` for the current `VERSION` in the Makefile.
+
+System dependency tree: [DEPENDENCIES.md](DEPENDENCIES.md).

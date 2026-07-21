@@ -30,6 +30,8 @@ Add manager and open-dialog screenshots under [`docs/screenshots/`](docs/screens
 - FUSE for type-2 AppImages: `libfuse2t64` (Ubuntu 24.04+) or `libfuse2` (older Debian/Ubuntu)
 - `desktop-file-utils`
 
+Full dependency tree (system packages, licenses, optional tools): [docs/DEPENDENCIES.md](docs/DEPENDENCIES.md).
+
 **Trust note:** Opening or integrating an AppImage may execute it (for example `--appimage-extract` / `--appimage-updateinfo`) to read metadata. Only integrate AppImages you trust.
 
 Installing the package sets Universe as the default handler for AppImage MIME types.
